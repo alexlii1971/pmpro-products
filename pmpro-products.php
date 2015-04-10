@@ -31,6 +31,9 @@ class PMPro_Products
 
     function __construct()
     {
+        global $table_prefix, $wpdb;
+        $wpdb->pmpro_membership_orders_meta = $table_prefix . 'pmpro_membership_orders_meta';
+
         add_action("pmpro_membership_level_after_other_settings", array($this, "pmpro_membership_level_after_other_settings"));
         add_action("pmpro_save_membership_level", array($this, "pmpro_save_donation_option"));
         add_filter("pmpro_level_cost_text", array($this, "pmpro_level_cost_text"), 10, 2);
@@ -324,6 +327,9 @@ class PMPro_Products
     function pmpro_added_order($order)
     {
         // use $order->id for reference
+        foreach ($order->membership_level->cart as $item => $amount) {
+            $this->add_order_item($order->id, array('name' => $item, 'amount' => $amount));
+        }
     }
 
     function pmpro_invoice_bullets_bottom($invoice)
@@ -351,7 +357,7 @@ class PMPro_Products
               order_id bigint(20) NOT NULL,
               meta_key varchar(255) DEFAULT NULL,
               meta_value longtext,
-              PRIMARY KEY (`meta_id`),
+              PRIMARY KEY (meta_id),
               KEY order_id (order_id),
               KEY meta_key (meta_key)
             )
@@ -367,6 +373,12 @@ class PMPro_Products
         return $wpdb->get_var($query) ? false : true;
     }
 
+    private function add_order_item($order_id, array $item)
+    {
+        global $wpdb;
+        $sql = "INSERT INTO $wpdb->pmpro_membership_orders_meta (order_id, meta_key, meta_value) VALUES(" . $order_id . ", '" . $item['name'] . "', " . $item['amount'] . ")";
+        return $wpdb->query($sql);
+    }
 }
 
 $pmpro_products = PMPro_Products::get_instance();
