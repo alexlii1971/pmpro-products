@@ -253,7 +253,7 @@ class PMPro_Products
 
         // check if a donation amount is passed and amount is valid then add to cart
         if ($amount && $this->pmpro_registration_checks(true)) {
-            $level->cart['donation'] = $amount;
+            $level->cart['donation'] = number_format((float)$amount, 2, '.', '');
         }
 
         return $level;
