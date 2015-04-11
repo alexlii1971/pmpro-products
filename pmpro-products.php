@@ -252,7 +252,7 @@ class PMPro_Products
             $amount = preg_replace("[^0-9\.]", "", $_REQUEST['donation_amount']);
 
         // check if a donation amount is passed and amount is valid then add to cart
-        if (isset($amount) && $this->pmpro_registration_checks(true)) {
+        if ($amount && $this->pmpro_registration_checks(true)) {
             $level->cart['donation'] = $amount;
         }
 
@@ -309,7 +309,11 @@ class PMPro_Products
     // process additional products from shopping cart to get the total initial payment
     function pmpro_checkout_order($order)
     {
-        //add membership amount to cart to recalculate initial payment, subtotal and tax
+        //check if the cart has items, otherwise do nothing
+        if (empty($order->membership_level->cart))
+            return $order;
+
+        //add membership amount to cart and recalculate initial payment, subtotal and tax
         $order->membership_level->cart['membership'] = $order->InitialPayment;
 
         $order->InitialPayment = 0;
@@ -326,6 +330,10 @@ class PMPro_Products
     // save itemized order from shopping cart
     function pmpro_added_order($order)
     {
+        //check if the cart has items, otherwise do nothing
+        if (empty($order->membership_level->cart))
+            return;
+
         // use $order->id for reference
         foreach ($order->membership_level->cart as $item => $amount) {
             $this->add_order_item($order->id, array('name' => $item, 'amount' => $amount));
