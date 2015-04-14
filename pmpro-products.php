@@ -389,4 +389,5 @@ class PMPro_Products
     }
 }
 
-$pmpro_products = PMPro_Products::get_instance();
+//load pmpro products plugin
+add_action('init', array('PMPro_Products', 'get_instance'));
